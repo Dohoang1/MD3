@@ -9,13 +9,19 @@ import java.util.List;
 public class UserDAO implements IUserDAO {
     private String jdbcURL = "jdbc:mysql://localhost:3306/demo?useSSL=false";
     private String jdbcUsername = "root";
-    private String jdbcPassword = "Minhhoang123";
+    private String jdbcPassword = "123456";
 
     private static final String INSERT_USERS_SQL = "INSERT INTO users (name, email, country) VALUES (?, ?, ?)";
     private static final String SELECT_USERS_BY_ID = "select id, name, country from users where id = ?";
     private static final String SELECT_ALL_USERS = "select * from users";
     private static final String UPDATE_USERS_SQL = "UPDATE users SET name =?, email =?, country =? WHERE id =?";
     private static final String DELETE_USERS_SQL = "DELETE FROM users WHERE id =?";
+    private static final String SELECT_ALL_USERS_BY_COUNTRY = "select * from users where country like ?";
+    private static final String SELECT_ALL_USERS_BY_NAME = "select * from users where name like ?";
+    private static final String SELECT_ALL_USERS_BY_ID = "select * from users where id like ?";
+    private static final String SORT_ALL_USERS_BY_NAME = "select * from users order by name";
+    private static final String SORT_ALL_USERS_BY_ID = "select * from users order by id";
+    private static final String SORT_ALL_USERS_BY_COUNTRY = "select * from users order by country";
 
     public UserDAO() {
     }
@@ -84,6 +90,79 @@ public class UserDAO implements IUserDAO {
         return users;
     }
 
+    public List<User> searchUsersByCountry(String countryParam) throws SQLException {
+        String sql = SELECT_ALL_USERS_BY_COUNTRY;
+        return executeSearch(sql, "%" + countryParam + "%");
+    }
+
+    public List<User> searchUsersByName(String nameParam) throws SQLException {
+        String sql = SELECT_ALL_USERS_BY_NAME;
+        return executeSearch(sql, "%" + nameParam + "%");
+    }
+
+    public List<User> searchUsersById(String idParam) throws SQLException {
+        String sql = SELECT_ALL_USERS_BY_ID;
+        return executeSearch(sql, idParam);
+    }
+
+    private List<User> executeSearch(String sql, String param) throws SQLException {
+        List<User> users = new ArrayList<>();
+        try (Connection connection = getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+
+            preparedStatement.setString(1, param);
+
+            try (ResultSet rs = preparedStatement.executeQuery()) {
+                while (rs.next()) {
+                    int id = rs.getInt("id");
+                    String name = rs.getString("name");
+                    String email = rs.getString("email");
+                    String country = rs.getString("country");
+                    users.add(new User(id, name, email, country));
+                }
+            }
+        } catch (SQLException e) {
+            printSQLException(e);
+            throw e;
+        }
+        return users;
+    }
+
+    public List<User> sortUserByName(String order) throws SQLException {
+        String sql = SORT_ALL_USERS_BY_NAME + (order.equalsIgnoreCase("desc") ? " DESC" : " ASC");
+        return executeSort(sql);
+    }
+
+    public List<User> sortUserById(String order) throws SQLException {
+        String sql = SORT_ALL_USERS_BY_ID + (order.equalsIgnoreCase("desc") ? " DESC" : " ASC");
+        return executeSort(sql);
+    }
+
+    public List<User> sortUserByCountry(String order) throws SQLException {
+        String sql = SORT_ALL_USERS_BY_COUNTRY + (order.equalsIgnoreCase("desc") ? " DESC" : " ASC");
+        return executeSort(sql);
+    }
+
+    private List<User> executeSort(String sql) throws SQLException {
+        List<User> users = new ArrayList<>();
+        try (Connection connection = getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql);
+             ResultSet rs = preparedStatement.executeQuery()) {
+
+            while (rs.next()) {
+                int id = rs.getInt("id");
+                String name = rs.getString("name");
+                String email = rs.getString("email");
+                String country = rs.getString("country");
+                users.add(new User(id, name, email, country));
+            }
+        } catch (SQLException e) {
+            printSQLException(e);
+            throw e;
+        }
+        return users;
+    }
+
     @Override
     public boolean deleteUser(int id) throws SQLException {
         boolean rowDeleted;
@@ -124,4 +203,5 @@ public class UserDAO implements IUserDAO {
             }
         }
     }
+
 }
