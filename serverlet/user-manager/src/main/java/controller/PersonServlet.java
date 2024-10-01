@@ -1,7 +1,7 @@
 package controller;
 
-import dao.UserDAO;
-import model.User;
+import dao.PersonDAO;
+import model.Person;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -13,13 +13,13 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
-@WebServlet(name = "UserServlet", urlPatterns = "/users")
-public class UserServlet extends HttpServlet {
+@WebServlet(name = "PersonServlet", urlPatterns = "/persons")
+public class PersonServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
-    private UserDAO userDAO;
+    private PersonDAO personDAO;
 
     public void init() {
-        userDAO = new UserDAO();
+        personDAO = new PersonDAO();
     }
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -34,10 +34,10 @@ public class UserServlet extends HttpServlet {
         try {
             switch (action) {
                 case "create":
-                    insertUser(request, response);
+                    insertPerson(request, response);
                     break;
                 case "edit":
-                    updateUser(request, response);
+                    updatePerson(request, response);
                     break;
             }
         } catch (SQLException ex) {
@@ -60,10 +60,10 @@ public class UserServlet extends HttpServlet {
                     showEditForm(request, response);
                     break;
                 case "delete":
-                    deleteUser(request, response);
+                    deletePerson(request, response);
                     break;
                 default:
-                    listUsers(request, response);
+                    listPersons(request, response);
                     break;
             }
         } catch (SQLException ex) {
@@ -71,101 +71,94 @@ public class UserServlet extends HttpServlet {
         }
     }
 
-    private void listUsers(HttpServletRequest request, HttpServletResponse response)
+    private void listPersons(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException, SQLException {
-        List<User> listUser;
+        List<Person> listPerson;
 
         String typeSearch = request.getParameter("searchtype");
         String keyword = request.getParameter("keyword");
         String sortBy = request.getParameter("sortby");
         String order = request.getParameter("order");
 
-        listUser = userDAO.selectAllUsers();
+        listPerson = personDAO.selectAllPersons();
 
         if (typeSearch != null && keyword != null && !keyword.isEmpty()) {
-            listUser = searchUsers(typeSearch, keyword);
+            listPerson = searchPersons(typeSearch, keyword);
         }
 
         if (sortBy != null && order != null) {
-            listUser = sortUsers(sortBy, order);
+            listPerson = sortPersons(sortBy, order);
         }
 
-        request.setAttribute("listUser", listUser);
-        RequestDispatcher dispatcher = request.getRequestDispatcher("users/list.jsp");
+        request.setAttribute("listPerson", listPerson);
+        RequestDispatcher dispatcher = request.getRequestDispatcher("view/list.jsp");
         dispatcher.forward(request, response);
     }
 
-    private List<User> searchUsers(String typeSearch, String keyword) throws SQLException {
+    private List<Person> searchPersons(String typeSearch, String keyword) throws SQLException {
         switch (typeSearch) {
             case "Name":
-                return userDAO.searchUsersByName(keyword);
+                return personDAO.searchPersonsByName(keyword);
             case "ID":
-                return userDAO.searchUsersById(keyword);
-            case "Country":
-                return userDAO.searchUsersByCountry(keyword);
+                return personDAO.searchPersonsById(keyword);
             default:
-                return userDAO.selectAllUsers();
+                return personDAO.selectAllPersons();
         }
     }
 
-    private List<User> sortUsers(String sortBy, String order) throws SQLException {
+    private List<Person> sortPersons(String sortBy, String order) throws SQLException {
         switch (sortBy) {
             case "ID":
-                return userDAO.sortUserById(order);
+                return personDAO.sortPersonById(order);
             case "Name":
-                return userDAO.sortUserByName(order);
-            case "Country":
-                return userDAO.sortUserByCountry(order);
+                return personDAO.sortPersonByName(order);
             default:
-                return userDAO.selectAllUsers();
+                return personDAO.selectAllPersons();
         }
     }
 
     private void showNewForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        RequestDispatcher dispatcher = request.getRequestDispatcher("users/create.jsp");
+        RequestDispatcher dispatcher = request.getRequestDispatcher("view/create.jsp");
         dispatcher.forward(request, response);
     }
 
     private void showEditForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException, SQLException {
         int id = Integer.parseInt(request.getParameter("id"));
-        User existingUser = userDAO.selectUser(id);
-        RequestDispatcher dispatcher = request.getRequestDispatcher("users/edit.jsp");
+        Person existingPerson = personDAO.selectPerson(id);
+        RequestDispatcher dispatcher = request.getRequestDispatcher("view/edit.jsp");
+        request.setAttribute("person", existingPerson);
         dispatcher.forward(request, response);
     }
 
-
-    private void insertUser(HttpServletRequest request, HttpServletResponse response)
+    private void insertPerson(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException, SQLException {
         String name = request.getParameter("name");
-        String email = request.getParameter("email");
-        String country = request.getParameter("country");
-        User newUser = new User(name, email, country);
-        userDAO.insertUser(newUser);
-        RequestDispatcher dispatcher = request.getRequestDispatcher("users/create.jsp");
-        dispatcher.forward(request, response);
+        String gender = request.getParameter("gender");
+        int age = Integer.parseInt(request.getParameter("age"));
+        String inscription = request.getParameter("inscription");
+        Person newPerson = new Person(name, gender, age, inscription);
+        personDAO.insertPerson(newPerson);
+        response.sendRedirect("persons");
     }
 
-    private void updateUser(HttpServletRequest request, HttpServletResponse response)
+    private void updatePerson(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException, SQLException {
         int id = Integer.parseInt(request.getParameter("id"));
         String name = request.getParameter("name");
-        String email = request.getParameter("email");
-        String country = request.getParameter("country");
-        User updatedUser = new User(id, name, email, country);
-        userDAO.updateUser(updatedUser);
-        RequestDispatcher dispatcher = request.getRequestDispatcher("users/edit.jsp");
-        dispatcher.forward(request, response);
+        String gender = request.getParameter("gender");
+        int age = Integer.parseInt(request.getParameter("age"));
+        String inscription = request.getParameter("inscription");
+        Person updatedPerson = new Person(id, name, gender, age, inscription);
+        personDAO.updatePerson(updatedPerson);
+        response.sendRedirect("persons");
     }
 
-    private void deleteUser(HttpServletRequest request, HttpServletResponse response)
+    private void deletePerson(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException, SQLException {
         int id = Integer.parseInt(request.getParameter("id"));
-        userDAO.deleteUser(id);
-        List<User> listUser = userDAO.selectAllUsers();
-        request.setAttribute("listUser", listUser);
-        RequestDispatcher dispatcher = request.getRequestDispatcher("users/list.jsp");
-        dispatcher.forward(request, response);
+        personDAO.deletePerson(id);
+        response.sendRedirect("persons");
     }
 }

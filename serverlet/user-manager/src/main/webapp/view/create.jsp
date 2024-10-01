@@ -2,36 +2,42 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <html>
 <head>
-    <title>User Management Application</title>
+    <title>Person Management Application</title>
 </head>
 <body>
-<h1>User Management</h1>
+<h1>Person Management</h1>
 <h2>
-    <a href="users?action=users">List All Users</a>
+    <a href="persons?action=persons">List All Persons</a>
 </h2>
 
 <div>
     <form method="post">
         <table>
             <caption>
-                <h2>Add New User</h2>
+                <h2>Thêm cá thể Font Bath Mới</h2>
             </caption>
             <tr>
-                <th>User Name: </th>
+                <th>Tên: </th>
                 <td>
                     <input type="text" name="name" id="name">
                 </td>
             </tr>
             <tr>
-                <th>User Email: </th>
+                <th>Giới tính: </th>
                 <td>
-                    <input type="text" name="email" id="email">
+                    <input type="text" name="gender" id="gender">
                 </td>
             </tr>
             <tr>
-                <th>User Country: </th>
+                <th>Tuổi: </th>
                 <td>
-                    <input type="text" name="country" id="country">
+                    <input type="number" name="age" id="age">
+                </td>
+            </tr>
+            <tr>
+                <th>Ghi Chú: </th>
+                <td>
+                    <input type="text" name="inscription" id="inscription">
                 </td>
             </tr>
             <tr>
